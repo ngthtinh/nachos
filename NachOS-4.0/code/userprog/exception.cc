@@ -155,7 +155,133 @@ void ExceptionHandler(ExceptionType which)
 			/* Prepare Result */
 			kernel->machine->WriteRegister(2, (int)result);
 	
-			// Increase Program Counter for next instructor
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		// System call: ReadNum
+    	case SC_ReadNum:
+			DEBUG(dbgSys, "System call: ReadNum.\n");
+	
+			// Process system call
+
+
+			// Prepare result
+
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		// System call: PrintNum
+    	case SC_PrintNum:
+			DEBUG(dbgSys, "System call: PrintNum.\n");
+	
+			// Process system call
+			
+
+			// Prepare result
+
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		// System call: ReadChar
+    	case SC_ReadChar:
+			DEBUG(dbgSys, "System call: ReadChar.\n");
+	
+			// Process system call
+			
+
+			// Prepare result
+
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		// System call: PrintChar
+    	case SC_PrintChar:
+			DEBUG(dbgSys, "System call: PrintChar.\n");
+	
+			// Process system call
+
+
+			// Prepare result
+
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		// System call: RandomNum
+    	case SC_RandomNum:
+			DEBUG(dbgSys, "System call: RandomNum.\n");
+	
+			// Process system call
+			
+
+			// Prepare result
+
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		// System call: ReadString
+    	case SC_ReadString:
+			DEBUG(dbgSys, "System call: ReadString.\n");
+	
+			// Process system call
+			
+
+			// Prepare result
+
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+
+		// System call: PrintString
+    	case SC_PrintString:
+			DEBUG(dbgSys, "System call: PrintString.\n");
+	
+			// Process system call
+			
+
+			// Prepare result
+
+
+			// Increase Program Counter for the next instructor
 			IncreasePC();
 
 			// Finish up
