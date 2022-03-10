@@ -48,6 +48,20 @@
 //	is in machine.h.
 //----------------------------------------------------------------------
 
+// Increase Program Counter
+void IncreasePC()
+{
+	/* Set previous programm counter (debugging only)*/
+	kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+
+	/* Set programm counter to next instruction (all Instructions are 4 byte wide)*/
+	kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+	  
+	/* Set next programm counter for brach execution */
+	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+}
+
+// Exception Handler
 void ExceptionHandler(ExceptionType which)
 {
     int type = kernel->machine->ReadRegister(2);
@@ -120,12 +134,14 @@ void ExceptionHandler(ExceptionType which)
     case SyscallException:
       	switch (type)
 		{
+		// Default syscall: Halt
       	case SC_Halt:
 			DEBUG(dbgSys, "Shutdown, initiated by user program.\n");
 			SysHalt();
 			ASSERTNOTREACHED();
 			break;
 
+		// Default syscall: Add
     	case SC_Add:
 			DEBUG(dbgSys, "Add " << kernel->machine->ReadRegister(4) << " + " << kernel->machine->ReadRegister(5) << "\n");
 	
@@ -135,25 +151,16 @@ void ExceptionHandler(ExceptionType which)
 			/* int op2 */(int)kernel->machine->ReadRegister(5));
 
 			DEBUG(dbgSys, "Add returning with " << result << "\n");
+
 			/* Prepare Result */
 			kernel->machine->WriteRegister(2, (int)result);
 	
-			/* Modify return point */
-			{
-			/* set previous programm counter (debugging only)*/
-			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			// Increase Program Counter for next instructor
+			IncreasePC();
 
-			/* set programm counter to next instruction (all Instructions are 4 byte wide)*/
-			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
-	  
-			/* set next programm counter for brach execution */
-			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
-			}
-
+			// Finish up
 			return;
-	
 			ASSERTNOTREACHED();
-
 			break;
 
 		default:
