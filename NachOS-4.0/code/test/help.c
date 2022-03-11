@@ -7,6 +7,7 @@ int main()
 {
     char character;
     character = ReadChar();
+    PrintChar(character);
 
     Halt();
     /* not reached */

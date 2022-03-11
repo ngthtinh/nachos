@@ -215,12 +215,12 @@ void ExceptionHandler(ExceptionType which)
 	
 			// Process system call
 			char character;
-			character = kernel->synchConsoleIn->GetChar();
+			character = kernel->synchConsoleIn->GetChar(); // Get char from SynchConsoleIn
 
 			DEBUG(dbgSys, "Read Char Done! Returning with: \"" << character << "\".\n");
 
 			// Prepare result
-			kernel->machine->WriteRegister(2, character);
+			kernel->machine->WriteRegister(2, character); // Save result to register $2
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();
@@ -237,10 +237,10 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: PrintChar.\n");
 	
 			// Process system call
+			char character;
+			character = kernel->machine->ReadRegister(4); // Load character to print from register $4
 
-
-			// Prepare result
-
+			kernel->synchConsoleOut->PutChar(character); // Print character to console by SynchConsoleOut
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();
