@@ -25,6 +25,7 @@
 #include "main.h"
 #include "syscall.h"
 #include "ksyscall.h"
+#include "synchconsole.h"
 //----------------------------------------------------------------------
 // ExceptionHandler
 // 	Entry point into the Nachos kernel.  Called when a user program
@@ -171,10 +172,9 @@ void ExceptionHandler(ExceptionType which)
     	case SC_ReadNum:
 		{
 			DEBUG(dbgSys, "System call: ReadNum.\n");
-	
+			
 			// Process system call
-			int result;
-			result = kernel->synchConsoleIn->GetChar();
+
 
 			// Prepare result
 
@@ -214,10 +214,13 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: ReadChar.\n");
 	
 			// Process system call
-			
+			char character;
+			character = kernel->synchConsoleIn->GetChar();
+
+			DEBUG(dbgSys, "Read Char Done! Returning with: \"" << character << "\".\n");
 
 			// Prepare result
-
+			kernel->machine->WriteRegister(2, character);
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();

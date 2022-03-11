@@ -5,7 +5,8 @@
 
 int main()
 {
-    
+    char character;
+    character = ReadChar();
 
     Halt();
     /* not reached */
