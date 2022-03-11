@@ -339,27 +339,27 @@ void ExceptionHandler(ExceptionType which)
 	
 			// Process system call
 			int virtAddr;
-			virtAddr = kernel->machine->ReadRegister(4);
+			virtAddr = kernel->machine->ReadRegister(4); // Read address of string
 
 			int length;
-			length = kernel->machine->ReadRegister(5);
+			length = kernel->machine->ReadRegister(5); // Get the maximum length of string
 
-			char* buffer = (char*) malloc(length);
+			char* buffer = (char*) malloc(length); // Prepare a buffer for reading
 			memset(buffer, 0, length);
 
-			int index;
+			int index; // Index
 			index = 0;
 
-			char character;
+			char character; // Character read from console
 
 			do
 			{
-				character = kernel->synchConsoleIn->GetChar();
-				if (character != '\n')
-					buffer[index++] = character;
-			} while (character != '\n' && index < length);
+				character = kernel->synchConsoleIn->GetChar(); // Get a character by SynchConsoleIn
+				if (character != '\n') // If it is not Enter key
+					buffer[index++] = character; // Save it to buffer
+			} while (character != '\n' && index < length); // Stop reading if Enter key is pressed
 
-			System2User(virtAddr, length, buffer);
+			System2User(virtAddr, length, buffer); // Copy string from System space to User space
 
 			delete buffer;
 
