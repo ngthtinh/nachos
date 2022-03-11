@@ -241,6 +241,8 @@ void ExceptionHandler(ExceptionType which)
 			character = kernel->machine->ReadRegister(4); // Load character to print from register $4
 
 			kernel->synchConsoleOut->PutChar(character); // Print character to console by SynchConsoleOut
+			
+			DEBUG(dbgSys, "Print Char Done!\n");
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();
@@ -257,10 +259,15 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: RandomNum.\n");
 	
 			// Process system call
-			
+			srand(time(NULL));
+
+			int result;
+			result = rand(); // Get a random integer
+
+			DEBUG(dbgSys, "Random Number Done! Returning with: \"" << result << "\".\n");
 
 			// Prepare result
-
+			kernel->machine->WriteRegister(2, result); // Save result to register $2
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();

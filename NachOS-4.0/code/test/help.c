@@ -5,9 +5,13 @@
 
 int main()
 {
-    char character;
-    character = ReadChar();
-    PrintChar(character);
+    int n;
+    n = RandomNum();
+    while (n > 0)
+    {
+        PrintChar(n % 10 + 48);
+        n /= 10;
+    }
 
     Halt();
     /* not reached */
