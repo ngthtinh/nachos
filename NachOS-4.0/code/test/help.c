@@ -5,13 +5,8 @@
 
 int main()
 {
-    int n;
-    n = RandomNum();
-    while (n > 0)
-    {
-        PrintChar(n % 10 + 48);
-        n /= 10;
-    }
+    PrintString("Nguyen Thanh Tinh\n");
+    PrintString("Pham Chi Bao\n");
 
     Halt();
     /* not reached */

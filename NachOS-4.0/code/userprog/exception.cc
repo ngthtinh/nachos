@@ -62,6 +62,60 @@ void IncreasePC()
 	kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
 }
 
+/*
+ * User Space to System Space
+ * Input : int virtAddr - User space address; int limit - Limit of buffer
+ * Output: char* - Buffer
+ * Purpose: Copy buffer from User memory space to System memory space
+ */
+char* User2System(int virtAddr, int limit)
+{
+	int i; // index
+	int oneChar;
+	char* kernelBuf = NULL;
+	kernelBuf = new char[limit + 1]; // Need for terminal string
+	
+	if (kernelBuf == NULL)
+		return kernelBuf;
+
+	memset(kernelBuf, 0, limit + 1);
+	
+	for (i = 0; i < limit; i++)
+	{
+		kernel->machine->ReadMem(virtAddr + i, 1, &oneChar);
+		kernelBuf[i] = (char) oneChar;
+		if (oneChar == 0)
+			break;
+	}
+
+	return kernelBuf;
+}
+
+/*
+ * System space to User space
+ * Input : int virtArr - User space address; int len - Limit of buffer; char* buffer - Buffer
+ * Output: int - Number of bytes copied
+ * Purpose: Copy buffer from System memory space to User memory space
+ */
+int System2User(int virtAddr, int len, char* buffer)
+{
+	if (len < 0) return -1;
+	if (len == 0) return len;
+
+	int i = 0;
+	int oneChar = 0 ;
+	
+	do
+	{
+		oneChar = (int) buffer[i];
+		kernel->machine->WriteMem(virtAddr+i,1,oneChar);
+		i++;
+	}
+	while(i < len && oneChar != 0);
+
+	return i;
+}
+
 // Exception Handler
 void ExceptionHandler(ExceptionType which)
 {
@@ -304,10 +358,19 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: PrintString.\n");
 	
 			// Process system call
-			
+			int virtAddr;
+			virtAddr = kernel->machine->ReadRegister(4); // Read address of string
 
-			// Prepare result
+			char* buffer;
+			buffer = User2System(virtAddr, 255); // Copy string from User space to System space
 
+			int index;
+			index = 0; // Index of the character to print from string
+
+			while (buffer[index] != 0)
+				kernel->synchConsoleOut->PutChar(buffer[index++]); // Print character to console by SynchConsoleOut
+
+			DEBUG(dbgSys, "Print String Done!\n");
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();
