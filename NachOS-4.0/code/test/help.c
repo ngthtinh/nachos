@@ -5,10 +5,8 @@
 
 int main()
 {
-    char buffer[10];
-    ReadString(buffer, 10);
-
-    PrintString(buffer);
+    int n = ReadNum();
+    PrintNum(n);
 
     Halt();
     /* not reached */

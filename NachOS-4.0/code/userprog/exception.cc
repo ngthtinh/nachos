@@ -228,10 +228,46 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: ReadNum.\n");
 			
 			// Process system call
+			char* buffer = (char*) malloc(255); // Prepare a buffer for reading
+			memset(buffer, 0, 255);
 
+			int index; // Index
+			index = 0;
+
+			char character; // Character read from console
+
+			do
+			{
+				character = kernel->synchConsoleIn->GetChar(); // Get a character by SynchConsoleIn
+				if (character != '\n') // If it is not Enter key
+					buffer[index++] = character; // Save it to buffer
+			} while (character != '\n' && index < 255); // Stop reading if Enter key is pressed
+	
+			char digit[10];
+			memset(digit, 0, 10);
+
+			int length;
+			
+			if (index > 9)
+				length = 10;
+			else
+				length = index;
+
+			for (int i = 0; i < length; i++)
+				digit[i] = buffer[index - length + i];
+
+			int result;
+			result = 0;
+
+			for (int i = 0; i < length; i++)
+			{
+				result = result * 10 + digit[i] - 48;
+			}
+
+			DEBUG(dbgSys, "Read Number Done! Returning with: \"" << result << "\".\n");
 
 			// Prepare result
-
+			kernel->machine->WriteRegister(2, result); // Save result to register $2
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();
@@ -248,10 +284,30 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: PrintNum.\n");
 	
 			// Process system call
-			
+			int number = kernel->machine->ReadRegister(4); // Load integer to print from register $4
 
-			// Prepare result
+			if (number == 0) // If number = 0
+				kernel->synchConsoleOut->PutChar('0'); // Print 0 by SynchConsoleOut
+			else
+			{
+				if (number < 0) // If number < 0
+				{
+					kernel->synchConsoleOut->PutChar('-'); // Print - by SynchConsoleOut
+					number = -number; // Make number positive
+				}
 
+				int exp = 1;
+				while (exp * 10 < number) exp *= 10;
+
+				// Print each digit of number from left to right
+				while (exp != 0)
+				{
+					kernel->synchConsoleOut->PutChar(number / exp % 10 + 48);
+					exp /= 10;
+				}
+			}
+
+			DEBUG(dbgSys, "Print Number Done!\n");
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();
@@ -361,7 +417,7 @@ void ExceptionHandler(ExceptionType which)
 
 			System2User(virtAddr, length, buffer); // Copy string from System space to User space
 
-			delete buffer;
+			delete buffer; // Delete the buffer
 
 			DEBUG(dbgSys, "Read String Done!\n");
 
@@ -392,7 +448,7 @@ void ExceptionHandler(ExceptionType which)
 			while (buffer[index] != 0) // Print character if it is not '\0'
 				kernel->synchConsoleOut->PutChar(buffer[index++]); // Print character to console by SynchConsoleOut
 
-			delete buffer;
+			delete buffer; // Delete the buffer
 
 			DEBUG(dbgSys, "Print String Done!\n");
 
