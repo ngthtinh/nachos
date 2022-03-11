@@ -5,8 +5,10 @@
 
 int main()
 {
-    PrintString("Nguyen Thanh Tinh\n");
-    PrintString("Pham Chi Bao\n");
+    char buffer[10];
+    ReadString(buffer, 10);
+
+    PrintString(buffer);
 
     Halt();
     /* not reached */

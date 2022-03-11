@@ -338,10 +338,32 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: ReadString.\n");
 	
 			// Process system call
-			
+			int virtAddr;
+			virtAddr = kernel->machine->ReadRegister(4);
 
-			// Prepare result
+			int length;
+			length = kernel->machine->ReadRegister(5);
 
+			char* buffer = (char*) malloc(length);
+			memset(buffer, 0, length);
+
+			int index;
+			index = 0;
+
+			char character;
+
+			do
+			{
+				character = kernel->synchConsoleIn->GetChar();
+				if (character != '\n')
+					buffer[index++] = character;
+			} while (character != '\n' && index < length);
+
+			System2User(virtAddr, length, buffer);
+
+			delete buffer;
+
+			DEBUG(dbgSys, "Read String Done!\n");
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();
@@ -367,8 +389,10 @@ void ExceptionHandler(ExceptionType which)
 			int index;
 			index = 0; // Index of the character to print from string
 
-			while (buffer[index] != 0)
+			while (buffer[index] != 0) // Print character if it is not '\0'
 				kernel->synchConsoleOut->PutChar(buffer[index++]); // Print character to console by SynchConsoleOut
+
+			delete buffer;
 
 			DEBUG(dbgSys, "Print String Done!\n");
 
