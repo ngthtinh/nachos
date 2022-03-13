@@ -231,11 +231,8 @@ void ExceptionHandler(ExceptionType which)
 			char* buffer = (char*) malloc(255); // Prepare a buffer for reading
 			memset(buffer, 0, 255);
 
-			int index; // Index
-			index = 0;
-
+			int index = 0; // Index
 			char character; // Character read from console
-
 			do
 			{
 				character = kernel->synchConsoleIn->GetChar(); // Get a character by SynchConsoleIn
@@ -243,26 +240,30 @@ void ExceptionHandler(ExceptionType which)
 					buffer[index++] = character; // Save it to buffer
 			} while (character != '\n' && index < 255); // Stop reading if Enter key is pressed
 	
-			char digit[10];
-			memset(digit, 0, 10);
-
-			int length;
+			int result = 0; // ReadNum result
 			
-			if (index > 9)
-				length = 10;
-			else
-				length = index;
-
-			for (int i = 0; i < length; i++)
-				digit[i] = buffer[index - length + i];
-
-			int result;
-			result = 0;
-
-			for (int i = 0; i < length; i++)
+			if (index <= 10) // It's store-able number
 			{
-				result = result * 10 + digit[i] - 48;
+				int start_index = 0;  // Where to start calculating the number. Default is 0.
+				if (buffer[0] == '-') // If it's negative
+					start_index = 1;  // Start from 1
+				
+				for (int i = start_index; i < index; i++)
+				{
+					if ('0' <= buffer[i] && buffer[i] <= '9') // Valid number
+						result = result * 10 + buffer[i] - 48;
+					else
+					{
+						result = 0; // Not a valid number, result must be 0
+						break;
+					}
+				}
+
+				if (buffer[0] == '-') // If it's negative number
+					result = -result;
 			}
+
+			free(buffer); // Free the buffer
 
 			DEBUG(dbgSys, "Read Number Done! Returning with: \"" << result << "\".\n");
 
@@ -417,7 +418,7 @@ void ExceptionHandler(ExceptionType which)
 
 			System2User(virtAddr, length, buffer); // Copy string from System space to User space
 
-			delete buffer; // Delete the buffer
+			free(buffer); // Free the buffer
 
 			DEBUG(dbgSys, "Read String Done!\n");
 
@@ -448,7 +449,7 @@ void ExceptionHandler(ExceptionType which)
 			while (buffer[index] != 0) // Print character if it is not '\0'
 				kernel->synchConsoleOut->PutChar(buffer[index++]); // Print character to console by SynchConsoleOut
 
-			delete buffer; // Delete the buffer
+			free(buffer); // Free the buffer
 
 			DEBUG(dbgSys, "Print String Done!\n");
 
