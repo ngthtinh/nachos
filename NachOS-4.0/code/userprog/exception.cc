@@ -325,8 +325,7 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: ReadChar.\n");
 	
 			// Process system call
-			char character;
-			character = kernel->synchConsoleIn->GetChar(); // Get char from SynchConsoleIn
+			char character = kernel->synchConsoleIn->GetChar(); // Get char from SynchConsoleIn
 
 			DEBUG(dbgSys, "Read Char Done! Returning with: \"" << character << "\".\n");
 
@@ -348,8 +347,7 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: PrintChar.\n");
 	
 			// Process system call
-			char character;
-			character = kernel->machine->ReadRegister(4); // Load character to print from register $4
+			char character = kernel->machine->ReadRegister(4); // Load character to print from register $4
 
 			kernel->synchConsoleOut->PutChar(character); // Print character to console by SynchConsoleOut
 			
@@ -372,8 +370,7 @@ void ExceptionHandler(ExceptionType which)
 			// Process system call
 			srand(time(NULL));
 
-			int result;
-			result = rand(); // Get a random integer
+			int result = rand(); // Get a random integer
 
 			DEBUG(dbgSys, "Random Number Done! Returning with: \"" << result << "\".\n");
 
@@ -395,20 +392,15 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: ReadString.\n");
 	
 			// Process system call
-			int virtAddr;
-			virtAddr = kernel->machine->ReadRegister(4); // Read address of string
+			int virtAddr = kernel->machine->ReadRegister(4); // Read address of string
 
-			int length;
-			length = kernel->machine->ReadRegister(5); // Get the maximum length of string
+			int length = kernel->machine->ReadRegister(5); // Get the maximum length of string
 
 			char* buffer = (char*) malloc(length); // Prepare a buffer for reading
 			memset(buffer, 0, length);
 
-			int index; // Index
-			index = 0;
-
+			int index = 0; // Index
 			char character; // Character read from console
-
 			do
 			{
 				character = kernel->synchConsoleIn->GetChar(); // Get a character by SynchConsoleIn
@@ -437,15 +429,11 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: PrintString.\n");
 	
 			// Process system call
-			int virtAddr;
-			virtAddr = kernel->machine->ReadRegister(4); // Read address of string
+			int virtAddr = kernel->machine->ReadRegister(4); // Read address of string
 
-			char* buffer;
-			buffer = User2System(virtAddr, 255); // Copy string from User space to System space
+			char* buffer = User2System(virtAddr, 255); // Copy string from User space to System space
 
-			int index;
-			index = 0; // Index of the character to print from string
-
+			int index = 0; // Index of the character to print from string
 			while (buffer[index] != 0) // Print character if it is not '\0'
 				kernel->synchConsoleOut->PutChar(buffer[index++]); // Print character to console by SynchConsoleOut
 
