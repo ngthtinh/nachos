@@ -450,6 +450,160 @@ void ExceptionHandler(ExceptionType which)
 			break;
 		}
 
+		// System call: Create
+    	case SC_Create:
+		{
+			DEBUG(dbgSys, "System call: Create.\n");
+	
+			// Process system call
+			// Code here
+
+			// Prepare result (if necessary)
+			// Code here
+
+			DEBUG(dbgSys, "Create Done!\n");
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		// System call: Open
+    	case SC_Open:
+		{
+			DEBUG(dbgSys, "System call: Open.\n");
+	
+			// Process system call
+			// Code here
+
+			// Prepare result (if necessary)
+			// Code here
+
+			DEBUG(dbgSys, "Open Done!\n");
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+	
+		// System call: Close
+    	case SC_Close:
+		{
+			DEBUG(dbgSys, "System call: Close.\n");
+	
+			// Process system call
+			// Code here
+
+			// Prepare result (if necessary)
+			// Code here
+
+			DEBUG(dbgSys, "Close Done!\n");
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		// System call: Read
+    	case SC_Read:
+		{
+			DEBUG(dbgSys, "System call: Read.\n");
+	
+			// Process system call
+			// Code here
+
+			// Prepare result (if necessary)
+			// Code here
+
+			DEBUG(dbgSys, "Read Done!\n");
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		// System call: Write
+    	case SC_Write:
+		{
+			DEBUG(dbgSys, "System call: Write.\n");
+	
+			// Process system call
+			// Code here
+
+			// Prepare result (if necessary)
+			// Code here
+
+			DEBUG(dbgSys, "Write Done!\n");
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		// System call: Seek
+    	case SC_Seek:
+		{
+			DEBUG(dbgSys, "System call: Seek.\n");
+	
+			// Process system call
+			// Code here
+
+			// Prepare result (if necessary)
+			// Code here
+
+			DEBUG(dbgSys, "Seek Done!\n");
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
+		// System call: Remove
+    	case SC_Remove:
+		{
+			DEBUG(dbgSys, "System call: Remove.\n");
+	
+			// Process system call
+			// Code here
+
+			// Prepare result (if necessary)
+			// Code here
+
+			DEBUG(dbgSys, "Remove Done!\n");
+
+			// Increase Program Counter for the next instructor
+			IncreasePC();
+
+			// Finish up
+			return;
+			ASSERTNOTREACHED();
+			break;
+		}
+
 		default:
 			cerr << "Unexpected system call " << type << "\n";
 			break;
