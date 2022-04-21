@@ -813,15 +813,74 @@ void ExceptionHandler(ExceptionType which)
 		}
 
 		// System call: Seek
+		// Input:	int - position: -1: Move to the end of the file, Other: Move to that position
+		// 			OpenFileId: Open File ID
+		// Output: New Position, or -1 for failure.
     	case SC_Seek:
 		{
 			DEBUG(dbgSys, "System call: Seek.\n");
 	
 			// Process system call
-			// Code here
+			int position			= kernel->machine->ReadRegister(4);
+			OpenFileId openFileId	= kernel->machine->ReadRegister(5);
 
-			// Prepare result (if necessary)
-			// Code here
+			// OpenFileId is not in range [0; MAX_FILES), or it's not opened
+			if (openFileId < 0 || openFileId >= MAX_FILES || kernel->fileSystem->openFile[openFileId] == NULL)
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Seek Failed!\n");
+
+				// Return -1 to Seek syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// If it's Console, cannot Seek!
+			if (openFileId == 0 || openFileId == 1)
+			{	
+				// Announce Error
+				DEBUG(dbgSys, "Cannot Seek on Console!\n");
+
+				// Return -1 to Seek syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// Seek a normal file
+			if (position == -1)
+				position = kernel->fileSystem->openFile[openFileId]->Length();
+
+			if (position < 0 || position > kernel->fileSystem->openFile[openFileId]->Length())
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Cannot Seek to this position!\n");
+
+				// Return -1 to Seek syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			kernel->fileSystem->openFile[openFileId]->Seek(position);
+
+			kernel->machine->WriteRegister(2, position);
 
 			DEBUG(dbgSys, "Seek Done!\n");
 
