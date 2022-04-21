@@ -68,6 +68,8 @@ void IncreasePC()
  * Output: char* - Buffer
  * Purpose: Copy buffer from User memory space to System memory space
  */
+#define MAX_BUFFER_SIZE 255
+
 char* User2System(int virtAddr, int limit)
 {
 	int i; // index
@@ -228,8 +230,8 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: ReadNum.\n");
 			
 			// Process system call
-			char* buffer = (char*) malloc(255); // Prepare a buffer for reading
-			memset(buffer, 0, 255);
+			char* buffer = (char*) malloc(MAX_BUFFER_SIZE); // Prepare a buffer for reading
+			memset(buffer, 0, MAX_BUFFER_SIZE);
 
 			int index = 0; // Index
 			char character; // Character read from console
@@ -238,7 +240,7 @@ void ExceptionHandler(ExceptionType which)
 				character = kernel->synchConsoleIn->GetChar(); // Get a character by SynchConsoleIn
 				if (character != '\n') // If it is not Enter key
 					buffer[index++] = character; // Save it to buffer
-			} while (character != '\n' && index < 255); // Stop reading if Enter key is pressed
+			} while (character != '\n' && index < MAX_BUFFER_SIZE); // Stop reading if Enter key is pressed
 	
 			int result = 0; // ReadNum result
 			
@@ -431,7 +433,7 @@ void ExceptionHandler(ExceptionType which)
 			// Process system call
 			int virtAddr = kernel->machine->ReadRegister(4); // Read address of string
 
-			char* buffer = User2System(virtAddr, 255); // Copy string from User space to System space
+			char* buffer = User2System(virtAddr, MAX_BUFFER_SIZE); // Copy string from User space to System space
 
 			int index = 0; // Index of the character to print from string
 			while (buffer[index] != 0) // Print character if it is not '\0'
@@ -458,7 +460,7 @@ void ExceptionHandler(ExceptionType which)
 			// Process system call
 			int virtAddr = kernel->machine->ReadRegister(4); // Read address of filename
 
-			char* filename = User2System(virtAddr, 255); // Copy filename from User space to Kernel space
+			char* filename = User2System(virtAddr, MAX_BUFFER_SIZE); // Copy filename from User space to Kernel space
 
 			if (filename == NULL) // User2System failed! (Reason: User2System cannot allocate filename buffer)
 			{
@@ -502,7 +504,7 @@ void ExceptionHandler(ExceptionType which)
 				kernel->machine->WriteRegister(2, -1);
 
 				// Finish up
-				delete filename;
+				delete[] filename;
 
 				IncreasePC();
 
@@ -514,7 +516,7 @@ void ExceptionHandler(ExceptionType which)
 			// Create file successfully, return 0 to Create syscall for success (Write 0 to register $2)
 			kernel->machine->WriteRegister(2, 0);
 
-			delete filename; // Delete filename buffer
+			delete[] filename; // Delete filename buffer
 
 			DEBUG(dbgSys, "Create Done!\n");
 
@@ -528,12 +530,42 @@ void ExceptionHandler(ExceptionType which)
 		}
 
 		// System call: Open
+		// Input: Filename
+		// Output: OpenFileID
     	case SC_Open:
 		{
 			DEBUG(dbgSys, "System call: Open.\n");
 	
 			// Process system call
-			// Code here
+			int virtAddr = kernel->machine->ReadRegister(4); // Read address of filename
+
+			char* filename = User2System(virtAddr, MAX_BUFFER_SIZE); // Copy filename from User space to Kernel space
+
+			int freeSlot = kernel->fileSystem->FindFreeSlot();
+			
+			if (freeSlot == -1) // Enough opened file
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Open Failed: Enough opened file!\n");
+
+				// Return -1 to Open syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				delete[] filename;
+
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// Open file
+			kernel->fileSystem->openFile[freeSlot] = kernel->fileSystem->Open(filename, 0);
+			kernel->machine->WriteRegister(2, freeSlot); // Return OpenFileID (freeSlot)
+
+			delete[] filename;
 
 			// Prepare result (if necessary)
 			// Code here
