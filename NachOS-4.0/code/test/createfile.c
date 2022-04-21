@@ -14,7 +14,8 @@ int main()
         PrintString("Failed!\n");
     */
 
-    int result;
+    int result, count;
+
     result = Open("test.txt");
     
     if (result == -1)
@@ -25,6 +26,16 @@ int main()
         PrintNum(result);
         PrintString("\n");
     }
+
+    count = Write("Hello!", 100, result);
+    if (count == -1)
+        PrintString("Write Failed!\n");
+    else
+        PrintString("Write Successful!\n");
+
+    PrintString("Count = ");
+    PrintNum(count);
+    PrintString("\n");
 
     result = Close(result);
 

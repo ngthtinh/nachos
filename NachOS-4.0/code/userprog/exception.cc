@@ -439,7 +439,7 @@ void ExceptionHandler(ExceptionType which)
 			while (buffer[index] != 0) // Print character if it is not '\0'
 				kernel->synchConsoleOut->PutChar(buffer[index++]); // Print character to console by SynchConsoleOut
 
-			free(buffer); // Free the buffer
+			delete[] buffer; // Free the buffer
 
 			DEBUG(dbgSys, "Print String Done!\n");
 
@@ -588,6 +588,7 @@ void ExceptionHandler(ExceptionType which)
 			// Process system call
 			OpenFileId openFileId = kernel->machine->ReadRegister(4); // Get OpenFileID to close
 
+			// OpenFileId is not in range [0; MAX_FILES), or it's not opened
 			if (openFileId < 0 || openFileId >= MAX_FILES || kernel->fileSystem->openFile[openFileId] == NULL)
 			{
 				// Announce Error
@@ -621,15 +622,94 @@ void ExceptionHandler(ExceptionType which)
 		}
 
 		// System call: Read
+		// Input: char* - buffer; int size - length to read; OpenFileId id
+		// Output: -1 for failure, Other: Number of read byte(s)
     	case SC_Read:
 		{
 			DEBUG(dbgSys, "System call: Read.\n");
 	
 			// Process system call
-			// Code here
+			int virtAddr			= kernel->machine->ReadRegister(4);
+			int size 				= kernel->machine->ReadRegister(5);
+			OpenFileId openFileId	= kernel->machine->ReadRegister(6);
 
-			// Prepare result (if necessary)
-			// Code here
+			// OpenFileId is not in range [0; MAX_FILES), or it's not opened
+			if (openFileId < 0 || openFileId >= MAX_FILES || kernel->fileSystem->openFile[openFileId] == NULL)
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Read Failed!\n");
+
+				// Return -1 to Read syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// If it's Console In, use synchConsoleIn object
+			if (openFileId == 0)
+			{	
+				char* buffer = (char*) malloc(size); // Prepare a buffer for reading
+				memset(buffer, 0, size);
+
+				int index = 0; // Index
+				char character; // Character read from console
+				do
+				{
+					character = kernel->synchConsoleIn->GetChar(); // Get a character by SynchConsoleIn
+					if (character != '\n') // If it is not Enter key
+						buffer[index++] = character; // Save it to buffer
+				} while (character != '\n' && index < size); // Stop reading if Enter key is pressed
+
+				System2User(virtAddr, size, buffer); // Copy string from System space to User space
+
+				free(buffer); // Free the buffer
+
+				kernel->machine->WriteRegister(2, index);
+
+				DEBUG(dbgSys, "Read String Done!\n");
+
+				// Increase Program Counter for the next instructor
+				IncreasePC();
+
+				// Finish up
+				return;
+				ASSERTNOTREACHED();
+				break;		
+			}
+			
+			// If it's Console Out, cannot read it!
+			if (openFileId == 1)
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Cannot read Console Out!\n");
+
+				// Return -1 to Read syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// Read a normal file
+			char* buffer = (char*) malloc(size); // Prepare a buffer for reading
+			memset(buffer, 0, size);
+
+			int OldPos = kernel->fileSystem->openFile[openFileId]->GetCurrentPos();
+			kernel->fileSystem->openFile[openFileId]->Read(buffer, size);
+			int NewPos = kernel->fileSystem->openFile[openFileId]->GetCurrentPos();
+
+			System2User(virtAddr, NewPos - OldPos, buffer);
+
+			kernel->machine->WriteRegister(2, NewPos - OldPos);
 
 			DEBUG(dbgSys, "Read Done!\n");
 
@@ -643,15 +723,83 @@ void ExceptionHandler(ExceptionType which)
 		}
 
 		// System call: Write
+		// Input: char* - buffer; int size - length to write; OpenFileId id
+		// Output: -1 for failure, Other: Number of wrote byte(s)
     	case SC_Write:
 		{
 			DEBUG(dbgSys, "System call: Write.\n");
 	
 			// Process system call
-			// Code here
+			int virtAddr			= kernel->machine->ReadRegister(4);
+			int size 				= kernel->machine->ReadRegister(5);
+			OpenFileId openFileId	= kernel->machine->ReadRegister(6);
 
-			// Prepare result (if necessary)
-			// Code here
+			// OpenFileId is not in range [0; MAX_FILES), or it's not opened
+			if (openFileId < 0 || openFileId >= MAX_FILES || kernel->fileSystem->openFile[openFileId] == NULL)
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Write Failed!\n");
+
+				// Return -1 to Write syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// If it's Console In, cannot read it!
+			if (openFileId == 0)
+			{	
+				// Announce Error
+				DEBUG(dbgSys, "Cannot write Console In!\n");
+
+				// Return -1 to Write syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+			
+			// If it's Console Out, use synchConsoleOut object
+			if (openFileId == 1)
+			{
+				char* buffer = User2System(virtAddr, size); // Copy string from User space to System space
+
+				int index = 0; // Index of the character to print from string
+				while (buffer[index] != 0) // Print character if it is not '\0'
+					kernel->synchConsoleOut->PutChar(buffer[index++]); // Print character to console by SynchConsoleOut
+
+				delete[] buffer; // Free the buffer
+
+				DEBUG(dbgSys, "Write Done!\n");
+
+				// Increase Program Counter for the next instructor
+				IncreasePC();
+
+				// Finish up
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// Write a normal file
+			char* buffer = User2System(virtAddr, size);
+
+			int OldPos = kernel->fileSystem->openFile[openFileId]->GetCurrentPos();
+			kernel->fileSystem->openFile[openFileId]->Write(buffer, strlen(buffer));
+			int NewPos = kernel->fileSystem->openFile[openFileId]->GetCurrentPos();
+
+			kernel->machine->WriteRegister(2, NewPos - OldPos);
+
+			delete[] buffer;
 
 			DEBUG(dbgSys, "Write Done!\n");
 
