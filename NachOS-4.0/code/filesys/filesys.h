@@ -37,8 +37,6 @@
 #include "sysdep.h"
 #include "openfile.h"
 
-// OpenFileID
-typedef int OpenFileID;
 #define MAX_FILES 10
 
 #ifdef FILESYS_STUB 		// Temporarily implement file system calls as 

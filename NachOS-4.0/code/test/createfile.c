@@ -18,13 +18,20 @@ int main()
     result = Open("test.txt");
     
     if (result == -1)
-        PrintString("Open Failed!");
+        PrintString("Open Failed!\n");
     else
     {
         PrintString("Open Successfully! OpenFileID = ");
         PrintNum(result);
         PrintString("\n");
     }
+
+    result = Close(result);
+
+    if (result == -1)
+        PrintString("Close Failed!\n");
+    else
+        PrintString("Close Successful!\n");
     
     Halt();
     /* not reached */

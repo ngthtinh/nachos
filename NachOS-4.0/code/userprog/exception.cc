@@ -567,9 +567,6 @@ void ExceptionHandler(ExceptionType which)
 
 			delete[] filename;
 
-			// Prepare result (if necessary)
-			// Code here
-
 			DEBUG(dbgSys, "Open Done!\n");
 
 			// Increase Program Counter for the next instructor
@@ -582,15 +579,35 @@ void ExceptionHandler(ExceptionType which)
 		}
 	
 		// System call: Close
+		// Input: OpenFileId - Open File ID
+		// Output: int - 0 for succes, -1 for failure
     	case SC_Close:
 		{
 			DEBUG(dbgSys, "System call: Close.\n");
 	
 			// Process system call
-			// Code here
+			OpenFileId openFileId = kernel->machine->ReadRegister(4); // Get OpenFileID to close
 
-			// Prepare result (if necessary)
-			// Code here
+			if (openFileId < 0 || openFileId >= MAX_FILES || kernel->fileSystem->openFile[openFileId] == NULL)
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Close Failed!\n");
+
+				// Return -1 to Close syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			delete kernel->fileSystem->openFile[openFileId];
+			kernel->fileSystem->openFile[openFileId] = NULL;
+
+			kernel->machine->WriteRegister(2, 0); // Return 0 for success
 
 			DEBUG(dbgSys, "Close Done!\n");
 

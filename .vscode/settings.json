@@ -1,6 +1,7 @@
 {
   "files.associations": {
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "syscall.h": "c"
   },
   "C_Cpp_Runner.cStandard": "",
   "C_Cpp_Runner.cppStandard": "",
