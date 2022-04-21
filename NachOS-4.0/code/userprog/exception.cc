@@ -456,10 +456,65 @@ void ExceptionHandler(ExceptionType which)
 			DEBUG(dbgSys, "System call: Create.\n");
 	
 			// Process system call
-			// Code here
+			int virtAddr = kernel->machine->ReadRegister(4); // Read address of filename
 
-			// Prepare result (if necessary)
-			// Code here
+			char* filename = User2System(virtAddr, 255); // Copy filename from User space to Kernel space
+
+			if (filename == NULL) // User2System failed! (Reason: User2System cannot allocate filename buffer)
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Create Failed: Cannot allocate filename buffer.\n");
+
+				// Return -1 to Create syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+			
+			if (strlen(filename) == 0)  // Invalid filename!
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Create Failed: Invalid filename.\n");
+
+				// Return -1 to Create syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// Create file using fileSystem object
+			if (kernel->fileSystem->Create(filename) == FALSE) // Create file failed!
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Create Failed!\n");
+
+				// Return -1 to Create syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				delete filename;
+
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// Create file successfully, return 0 to Create syscall for success (Write 0 to register $2)
+			kernel->machine->WriteRegister(2, 0);
+
+			delete filename; // Delete filename buffer
 
 			DEBUG(dbgSys, "Create Done!\n");
 
