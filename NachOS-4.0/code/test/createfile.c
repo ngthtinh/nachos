@@ -43,6 +43,13 @@ int main()
         PrintString("Close Failed!\n");
     else
         PrintString("Close Successful!\n");
+
+    result = Remove("test.txt");
+
+    if (result == 0)
+        PrintString("Success!\n");
+    else
+        PrintString("Failed!\n");
     
     Halt();
     /* not reached */

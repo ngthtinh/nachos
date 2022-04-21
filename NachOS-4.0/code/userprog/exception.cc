@@ -453,6 +453,8 @@ void ExceptionHandler(ExceptionType which)
 		}
 
 		// System call: Create
+		// Input: char* filename
+		// Output: 0 for success, -1 for failure
     	case SC_Create:
 		{
 			DEBUG(dbgSys, "System call: Create.\n");
@@ -894,17 +896,96 @@ void ExceptionHandler(ExceptionType which)
 		}
 
 		// System call: Remove
+		// Input: char* filename
+		// Output: 0 for success, -1 for failure
     	case SC_Remove:
 		{
 			DEBUG(dbgSys, "System call: Remove.\n");
 	
 			// Process system call
-			// Code here
+			int virtAddr = kernel->machine->ReadRegister(4); // Read address of filename
 
-			// Prepare result (if necessary)
-			// Code here
+			char* filename = User2System(virtAddr, MAX_BUFFER_SIZE); // Copy filename from User space to Kernel space
 
-			DEBUG(dbgSys, "Remove Done!\n");
+			if (filename == NULL) // User2System failed! (Reason: User2System cannot allocate filename buffer)
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Remove Failed: Cannot allocate filename buffer.\n");
+
+				// Return -1 to Remove syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+			
+			if (strlen(filename) == 0)  // Invalid filename!
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Remove Failed: Invalid filename.\n");
+
+				// Return -1 to Remove syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;
+			}
+
+			// Check for file opening
+			OpenFile* testOpenFile = kernel->fileSystem->Open(filename);
+
+			if (testOpenFile == NULL)
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Remove Failed: File is opening.\n");
+
+				// Return -1 to Remove syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;	
+			}
+
+			delete testOpenFile;
+			testOpenFile = NULL;
+
+			// Remove file using fileSystem object
+			if (kernel->fileSystem->Remove(filename) == FALSE) // Remove faile failed!
+			{
+				// Announce Error
+				DEBUG(dbgSys, "Remove Failed!\n");
+
+				// Return -1 to Remove syscall for failure (Write -1 to register $2)
+				kernel->machine->WriteRegister(2, -1);
+
+				// Finish up
+				delete filename;
+
+				IncreasePC();
+
+				return;
+				ASSERTNOTREACHED();
+				break;		
+			}
+
+			// Remove file successfully, return 0 to Remove syscall for success (Write 0 to register $2)
+			kernel->machine->WriteRegister(2, 0);
+
+			delete[] filename; // Delete filename buffer
+
+			DEBUG(dbgSys, "Create Done!\n");
 
 			// Increase Program Counter for the next instructor
 			IncreasePC();
