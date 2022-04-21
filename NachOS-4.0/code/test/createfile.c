@@ -2,54 +2,25 @@
 
 #include "syscall.h"
 
+#define MAX_LENGTH 255
+
 int main()
 {
-    /*
-    int result;
-    result = Create("test.txt");
+    char filename[MAX_LENGTH];
 
-    if (result == 0)
-        PrintString("Success!\n");
-    else
-        PrintString("Failed!\n");
-    */
+    PrintString("Enter file name to create: ");
+    ReadString(filename, MAX_LENGTH);
 
-    int result, count;
-
-    result = Open("test.txt");
-    
-    if (result == -1)
-        PrintString("Open Failed!\n");
+    if (Create(filename) == 0)
+    {
+        PrintString("Create file ");
+        PrintString(filename);
+        PrintString(" successfully!\n");
+    }
     else
     {
-        PrintString("Open Successfully! OpenFileID = ");
-        PrintNum(result);
-        PrintString("\n");
+        PrintString("Failed to create file: Invalid file name!\n");
     }
-
-    count = Write("Hello!", 100, result);
-    if (count == -1)
-        PrintString("Write Failed!\n");
-    else
-        PrintString("Write Successful!\n");
-
-    PrintString("Count = ");
-    PrintNum(count);
-    PrintString("\n");
-
-    result = Close(result);
-
-    if (result == -1)
-        PrintString("Close Failed!\n");
-    else
-        PrintString("Close Successful!\n");
-
-    result = Remove("test.txt");
-
-    if (result == 0)
-        PrintString("Success!\n");
-    else
-        PrintString("Failed!\n");
     
     Halt();
     /* not reached */
