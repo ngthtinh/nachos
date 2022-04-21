@@ -140,6 +140,18 @@ FileSystem::FileSystem(bool format)
         freeMapFile = new OpenFile(FreeMapSector);
         directoryFile = new OpenFile(DirectorySector);
     }
+
+    openFile = new OpenFile*[MAX_FILES];
+    index = 0;
+
+    for (int i = 0; i < MAX_FILES; i++)
+        openFile[i] = NULL;
+
+    this->Create("stdin", 0);
+    this->Create("stdout", 0);
+
+    openFile[index++] = this->Open("stdin", 2);
+    openFile[index++] = this->Open("stdout", 3);
 }
 
 //----------------------------------------------------------------------
@@ -226,17 +238,45 @@ FileSystem::Create(char *name, int initialSize)
 OpenFile *
 FileSystem::Open(char *name)
 { 
+    index++;
+
     Directory *directory = new Directory(NumDirEntries);
-    OpenFile *openFile = NULL;
     int sector;
 
     DEBUG(dbgFile, "Opening file" << name);
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name); 
     if (sector >= 0) 		
-	openFile = new OpenFile(sector);	// name was found in directory 
+	    openFile[index - 1] = new OpenFile(sector);	// name was found in directory 
     delete directory;
-    return openFile;				// return NULL if not found
+    
+    return openFile[index - 1];				// return NULL if not found
+}
+
+OpenFile *FileSystem::Open(char *name, int type)
+{
+    int freeSlot = this->FindFreeSlot();
+
+    Directory *directory = new Directory(NumDirEntries);
+    int sector;
+
+    DEBUG(dbgFile, "Opening file" << name);
+    directory->FetchFrom(directoryFile);
+    sector = directory->Find(name); 
+    if (sector >= 0) 		
+	    openFile[freeSlot] = new OpenFile(sector, type);	// name was found in directory 
+    delete directory;
+    
+    return openFile[freeSlot];				// return NULL if not found
+}
+
+int FileSystem::FindFreeSlot()
+{
+    for (int i = 2; i < MAX_FILES; i++)
+        if (openFile[i] == NULL)
+            return i;
+    
+    return -1;
 }
 
 //----------------------------------------------------------------------

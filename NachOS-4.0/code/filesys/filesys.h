@@ -37,12 +37,42 @@
 #include "sysdep.h"
 #include "openfile.h"
 
+// OpenFileID
+typedef int OpenFileID;
+#define MAX_FILES 10
+
 #ifdef FILESYS_STUB 		// Temporarily implement file system calls as 
 				// calls to UNIX, until the real file system
 				// implementation is available
+
 class FileSystem {
   public:
-    FileSystem() {}
+	OpenFile** openFile; // Check for opening file
+	int index; // openFile index
+
+    FileSystem()
+	{
+		openFile = new OpenFile*[MAX_FILES];
+		index = 0;
+
+		for (int i = 0; i < MAX_FILES; i++)
+			openFile[i] = NULL;
+		
+		this->Create("stdin", 0);
+		this->Create("stdout", 0);
+
+		openFile[index++] = this->Open("stdin", 2);
+		openFile[index++] = this->Open("stdout", 3);
+	}
+
+	~FileSystem()
+	{
+		for (int i = 0; i < MAX_FILES; i++)
+			if (openFile[i] != NULL)
+				delete openFile[i];
+		
+		delete[] openFile;
+	}
 
     bool Create(char *name) {
 	int fileDescriptor = OpenForWrite(name);
@@ -52,12 +82,38 @@ class FileSystem {
 	return TRUE; 
 	}
 
+	bool Create(char *name, int initialSize)
+	{
+		int fileDescriptor = OpenForWrite(name);
+
+		if (fileDescriptor == -1) return FALSE;
+		Close(fileDescriptor); 
+		return TRUE; 
+	}
+
     OpenFile* Open(char *name) {
 	  int fileDescriptor = OpenForReadWrite(name, FALSE);
 
 	  if (fileDescriptor == -1) return NULL;
 	  return new OpenFile(fileDescriptor);
       }
+
+	OpenFile* Open(char *name, int type)
+	{
+	  int fileDescriptor = OpenForReadWrite(name, FALSE);
+
+	  if (fileDescriptor == -1) return NULL;
+	  return new OpenFile(fileDescriptor, type);
+	}
+
+	int FindFreeSlot()
+	{
+		for (int i = 2; i < MAX_FILES; i++)
+			if (openFile[i] == NULL)
+				return i;
+		
+		return -1;
+	}
 
     bool Remove(char *name) { return Unlink(name) == 0; }
 
@@ -66,6 +122,9 @@ class FileSystem {
 #else // FILESYS
 class FileSystem {
   public:
+	OpenFile** openFile;
+	int index;
+
     FileSystem(bool format);		// Initialize the file system.
 					// Must be called *after* "synchDisk" 
 					// has been initialized.
@@ -77,6 +136,8 @@ class FileSystem {
 					// Create a file (UNIX creat)
 
     OpenFile* Open(char *name); 	// Open a file (UNIX open)
+	OpenFile* Open(char *name, int type); // Open a file with type
+	int FindFreeSlot(); // Find Free Slot
 
     bool Remove(char *name);  		// Delete a file (UNIX unlink)
 

@@ -8,9 +8,9 @@ int main()
     result = Create("test.txt");
 
     if (result == 0)
-        PrintString("Success!");
+        PrintString("Success!\n");
     else
-        PrintString("Failed!");
+        PrintString("Failed!\n");
 
     Halt();
     /* not reached */

@@ -493,7 +493,7 @@ void ExceptionHandler(ExceptionType which)
 			}
 
 			// Create file using fileSystem object
-			if (kernel->fileSystem->Create(filename) == FALSE) // Create file failed!
+			if (kernel->fileSystem->Create(filename, 0) == FALSE) // Create file failed!
 			{
 				// Announce Error
 				DEBUG(dbgSys, "Create Failed!\n");
