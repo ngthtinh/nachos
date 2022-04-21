@@ -14,10 +14,10 @@ int main()
     PrintString("Enter source file name: ");
     ReadString(filename_1, MAX_LENGTH);
 
-    // Open file
+    // Open file 1
     openFileId_1 = Open(filename_1);
 
-    // Display content
+    // Copy content
     if (openFileId_1 >= 0)
     {
         // Read filename 2
@@ -34,7 +34,7 @@ int main()
         size = Seek(-1, openFileId_1);
         Seek(0, openFileId_1);
 
-        // Print each byte to console
+        // Copy each byte
         for (i = 0; i < size; i++)
         {
             Read(&c, 1, openFileId_1);
