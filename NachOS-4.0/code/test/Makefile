@@ -78,7 +78,7 @@
 #
 #	change the PROGRAMS definition to look like this:
 #
-#		PROGRAMS = halt shell matmult sort foo
+#		PROGRAMS = halt matmult sort foo
 #
 #	add these dependencies/commands:
 #
@@ -112,7 +112,7 @@ ifeq ($(hosttype),unknown)
 PROGRAMS = unknownhost
 else
 # change this if you create a new test program!
-PROGRAMS = add halt shell matmult segments help ascii sort createfile cat copy delete concatenate
+PROGRAMS = add halt matmult segments help ascii sort createfile cat copy delete concatenate
 endif
 
 all: $(PROGRAMS)
@@ -128,16 +128,9 @@ halt: halt.o start.o
 
 add.o: add.c
 	$(CC) $(CFLAGS) -c add.c
-
 add: add.o start.o
 	$(LD) $(LDFLAGS) start.o add.o -o add.coff
 	$(COFF2NOFF) add.coff add
-
-shell.o: shell.c
-	$(CC) $(CFLAGS) -c shell.c
-shell: shell.o start.o
-	$(LD) $(LDFLAGS) start.o shell.o -o shell.coff
-	$(COFF2NOFF) shell.coff shell
 
 # Make file of help.c
 help.o: help.c
